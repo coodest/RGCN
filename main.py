@@ -6,6 +6,7 @@ from tqdm import tqdm, trange
 
 from utils import load_data, generate_sampled_graph_and_labels, build_test_graph, calc_mrr
 from models import RGCN
+from lp_common import LPLoader, LPEval
 
 def train(train_triplets, model, use_cuda, batch_size, split_size, negative_sample, reg_ratio, num_entities, num_relations):
 
@@ -27,12 +28,23 @@ def valid(valid_triplets, model, test_graph, all_triplets):
 
     return mrr
 
-def test(test_triplets, model, test_graph, all_triplets):
+def test(graph, id2entity, test_triplets, model, test_graph, all_triplets):
 
     entity_embedding = model(test_graph.entity, test_graph.edge_index, test_graph.edge_type, test_graph.edge_norm)
-    mrr = calc_mrr(entity_embedding, model.relation_embedding, test_triplets, all_triplets, hits=[1, 3, 10])
+    
+    entity_embedding = entity_embedding.cpu().detach().numpy()
+    node_emb = dict()
+    for ind, emb in enumerate(entity_embedding):
+        node_emb[id2entity[ind]] = emb
 
-    return mrr
+    LPEval.eval(
+        graph,
+        node_emb
+    )
+
+    # mrr = calc_mrr(entity_embedding, model.relation_embedding, test_triplets, all_triplets, hits=[1, 3, 10])
+
+    # return mrr
 
 def main(args):
 
@@ -42,7 +54,9 @@ def main(args):
 
     best_mrr = 0
 
-    entity2id, relation2id, train_triplets, valid_triplets, test_triplets = load_data('./data/FB15k-237')
+    # entity2id, relation2id, train_triplets, valid_triplets, test_triplets = load_data('./data/FB15k-237')
+    graph, id2entity, entity2id, relation2id, train_triplets, valid_triplets, test_triplets = LPLoader().load_data()
+    
     all_triplets = torch.LongTensor(np.concatenate((train_triplets, valid_triplets, test_triplets)))
 
     test_graph = build_test_graph(len(entity2id), len(relation2id), train_triplets)
@@ -92,23 +106,23 @@ def main(args):
 
     model.eval()
 
-    checkpoint = torch.load('best_mrr_model.pth')
-    model.load_state_dict(checkpoint['state_dict'])
+    # checkpoint = torch.load('best_mrr_model.pth')
+    # model.load_state_dict(checkpoint['state_dict'])
 
-    test(test_triplets, model, test_graph, all_triplets)
+    test(graph, id2entity, test_triplets, model, test_graph, all_triplets)
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='RGCN')
     
-    parser.add_argument("--graph-batch-size", type=int, default=30000)
+    parser.add_argument("--graph-batch-size", type=int, default=300)
     parser.add_argument("--graph-split-size", type=float, default=0.5)
     parser.add_argument("--negative-sample", type=int, default=1)
-    parser.add_argument("--n-epochs", type=int, default=10000)
+    parser.add_argument("--n-epochs", type=int, default=50)
     parser.add_argument("--evaluate-every", type=int, default=500)
     
     parser.add_argument("--dropout", type=float, default=0.2)
-    parser.add_argument("--gpu", type=int, default=-1)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--n-bases", type=int, default=4)
     
