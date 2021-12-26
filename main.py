@@ -118,11 +118,11 @@ if __name__ == '__main__':
     parser.add_argument("--graph-batch-size", type=int, default=300)
     parser.add_argument("--graph-split-size", type=float, default=0.5)
     parser.add_argument("--negative-sample", type=int, default=1)
-    parser.add_argument("--n-epochs", type=int, default=50)
+    parser.add_argument("--n-epochs", type=int, default=5000)
     parser.add_argument("--evaluate-every", type=int, default=500)
     
     parser.add_argument("--dropout", type=float, default=0.2)
-    parser.add_argument("--gpu", type=int, default=0)
+    parser.add_argument("--gpu", type=int, default=1)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--n-bases", type=int, default=4)
     

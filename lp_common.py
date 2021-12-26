@@ -74,11 +74,11 @@ class Context:
     all configurable fields of the project
     """
     # 1. loader
-    multi_class = True  # True / False
+    multi_class = False  # True / False
     twitter_feat_dim = 500  # the real dimension may be a little bit more than this value
     embedding_method = 0  # 0: original embeddings / features, 1: node2vec
     feature_concat_embedding = False  # True / False, new embeddings with original embeddings / features together
-    neg_pos_ratio = 0
+    neg_pos_ratio = 1
 
     # 2. generator
     tr_ge_divide_ratio = 0.5
@@ -97,7 +97,7 @@ class Profile(Context):
     profile_e = "ppi"
     profile_f = "twitter"
     profile_g = "blogcatalog"
-    profile = profile_b
+    profile = profile_g
 
     if profile == profile_a:
         dataset = "dblp"
@@ -311,7 +311,7 @@ class LPLoader:
             
             return new_graph
 
-    def twitter(self, num=1000):
+    def twitter(self, num=100):
         feature_dicts = dict()
         edge_dicts = dict()
         entity_num = 0
