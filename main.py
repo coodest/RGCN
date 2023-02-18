@@ -49,6 +49,7 @@ def test(graph, id2entity, test_triplets, model, test_graph, all_triplets):
 def main(args):
 
     use_cuda = args.gpu >= 0 and torch.cuda.is_available()
+    print(f"use cuda: {use_cuda}")
     if use_cuda:
         torch.cuda.set_device(args.gpu)
 
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     parser.add_argument("--evaluate-every", type=int, default=500)
     
     parser.add_argument("--dropout", type=float, default=0.2)
-    parser.add_argument("--gpu", type=int, default=1)
+    parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--lr", type=float, default=1e-2)
     parser.add_argument("--n-bases", type=int, default=4)
     
